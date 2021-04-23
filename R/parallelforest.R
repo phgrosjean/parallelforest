@@ -16,6 +16,18 @@ table(train$Class)
 library(randomForest)
 system.time(class3 <- randomForest(data = train, Class ~ .))
 # 11sec on EN-Shark
-summary(class3) # OOB error rater = 11.54%
+summary(class3) # OOB error rate = 11.54%
 
-# TODO: ranger & Rborist versions for comparison
+# Ranger, similar code to randomForest() with same default values
+library(ranger)
+system.time(class3 <- ranger(data = train, Class ~ .)) # num.threads = max_by_def))
+# 2sec on EN-Shark using all 32 threads
+summary(class3) # OOB error rate = 11.54%
+
+# Rborist
+library(Rborist)
+system.time(class3 <- Rborist(train[-34], train$Class, nTree = 500))
+# 4.4sec on EN-Shark, using all 32 threads
+class3$validation$oobError # OOB error rate = 12.08%
+
+# => In our cases, ranger seems to be the best one.
