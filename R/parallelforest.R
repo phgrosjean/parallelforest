@@ -8,7 +8,7 @@ train$Item <- NULL
 train$XStart <- NULL
 train$YStart <- NULL
 train$Dil <- NULL
-# Elimiunate the empty Class '.'
+# Eliminate the empty Class '.'
 train$Class <- as.factor(as.character(train$Class))
 table(train$Class)
 
@@ -20,7 +20,7 @@ summary(class3) # OOB error rate = 11.54%
 
 # Ranger, similar code to randomForest() with same default values
 library(ranger)
-system.time(class3 <- ranger(data = train, Class ~ .)) # num.threads = max_by_def))
+ system.time(class3 <- ranger(data = train, Class ~ .)) # num.threads = max_by_def))
 # 2sec on EN-Shark using all 32 threads
 summary(class3) # OOB error rate = 11.54%
 
