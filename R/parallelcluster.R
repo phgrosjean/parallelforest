@@ -134,26 +134,30 @@ stopCluster(cl)
 #remotes::install_github("bwlewis/doRedis")
 # Start several R processes in terminal and:
 #library('doRedis')
-#redisWorker('jobs')
+#redisWorker('Rjobs')
 #For a worker on another computer:
 #redisWorker('jobs', host='Cazart', port=6379)
 # For more control and debugging possibilities:
-#options(error=recover); system("clear"); doRedis::redisWorker('jobs', loglevel = 1, timeout = 1)
+#options(error=recover); system("clear"); doRedis::redisWorker('Rjobs') #, loglevel = 1, timeout = 1)
 
 # In the master R process:
 library(doRedis)
-library(foreach)
+#Loaded by doRedis library(foreach)
 
-registerDoRedis('jobs')
+# Create 8 workers in the 'Rjobs' queue using tmux
+system("tmuxinator start -n Rjobs")
+
+registerDoRedis('Rjobs')
+# Determine how many workers we have
+getDoParWorkers()
+
 setProgress(TRUE)
+
 foreach(j = 1:100, .combine = sum, .multicombine = TRUE) %dopar% {
   doRedis::logger(paste("Processing iteration", j))
   Sys.sleep(0.1) # Artificially increase the calculation time
   4 * sum((runif(1000000) ^ 2 + runif(1000000) ^ 2) < 1) / 10000000
 }
-
-# Determine how many workers we have
-getDoParWorkers()
 
 # Parallel version of the boot() function, from the vignette of {doRedis}
 
@@ -205,6 +209,8 @@ mle = NULL, simple = FALSE, chunks = 1, verbose = FALSE, ...) {
 rsq <- function(formula, data, indices) {
   d <- data[indices,] # allows boot to select sample
   fit <- lm(formula, data = d)
+  # Simulate a long calculation
+  Sys.sleep(0.01)
   return(summary(fit)$r.square)
 }
 # bootstrapping with 1000 replications
@@ -228,6 +234,7 @@ res <- bench::mark(
     formula = mpg~wt+disp, chunks = 8L),
   check = FALSE # Obviously, we always got different results!
 )
+res
 # The redis version is 3.2x faster with 4 workers and 4x faster with 8 workers
 # ... but these calculations are a little bit too slow for this system!
 
@@ -240,7 +247,7 @@ res <- bench::mark(
 # Redis limits values to less than 512Mb =# advanced topics in the vignette for larger data.
 
 # This is the equivalent to closeCluster(cl)
-removeQueue('jobs')
+removeQueue('Rjobs'); system("tmux kill-session -t Rjobs")
 
 # Advantages of doRedis are elasticity, fault-tolerance and portability to different OSes. One can add more workers in the middle of a calculation!
 # It is also possible to define batch processing of several iterations in
@@ -254,3 +261,19 @@ removeQueue('jobs')
 #
 
 # I would need a tmuxinator configuration to get htop + n workers on a machine
+# On Ubuntu:
+#sudo apt update
+#sudo apt install ruby-full
+#ruby --version
+#gem --version
+#sudo gem install tmuxinator
+#tmuxinator version
+#
+#Then: cd to project dir
+#tmuxinator new --local Rjobs
+# Then edit the file
+#Start the session with:
+#cd root project
+#tmuxinator start -n Rjobs
+# Or from any folder:
+#tmuxinator start -n Rjobs -p /home/phgrosjean/Documents/GitHub/parallelforest/.tmuxinator.yml

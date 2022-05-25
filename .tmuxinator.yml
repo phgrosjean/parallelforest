@@ -1,0 +1,63 @@
+# ./.tmuxinator.yml
+
+name: Rjobs
+root: ~/
+
+# Optional tmux socket
+# socket_name: foo
+
+# Note that the pre and post options have been deprecated and will be replaced by
+# project hooks.
+
+# Project hooks
+
+# Runs on project start, always
+# on_project_start: command
+
+# Run on project start, the first time
+# on_project_first_start: command
+
+# Run on project start, after the first time
+# on_project_restart: command
+
+# Run on project exit ( detaching from tmux session )
+# on_project_exit: command
+
+# Run on project stop
+# on_project_stop: command
+
+# Runs in each window and pane before window/pane specific commands. Useful for setting up interpreter versions.
+# pre_window: rbenv shell 2.0.0-p247
+
+# Pass command line options to tmux. Useful for specifying a different tmux.conf.
+# tmux_options: -f ~/.tmux.mac.conf
+
+# Change the command to call tmux.  This can be used by derivatives/wrappers like byobu.
+# tmux_command: byobu
+
+# Specifies (by name or index) which window will be selected on project startup. If not set, the first window is used.
+# startup_window: jobs
+
+# Specifies (by index) which pane of the specified window will be selected on project startup. If not set, the first pane is used.
+# startup_pane: 1
+
+# Controls whether the tmux session should be attached to automatically. Defaults to true.
+# attach: false
+
+windows:
+  - jobs:
+      layout: 3cb6,132x58,0,0[132x11,0,0,0,132x46,0,12{66x46,0,12[66x11,0,12,1,66x11,0,24,7,66x11,0,36,5,66x10,0,48,6],65x46,67,12[65x11,67,12,3,65x11,67,24,8,65x11,67,36,4,65x10,67,48,9]}]
+      # Synchronize all panes of this window, can be enabled before or after the pane commands run.
+      # 'before' represents legacy functionality and will be deprecated in a future release, in favour of 'after'
+      # synchronize: after
+      panes:
+        - htop
+        - R -e 'options(error=recover); system("clear"); doRedis::redisWorker("Rjobs")'
+        - R -e 'options(error=recover); system("clear"); doRedis::redisWorker("Rjobs")'
+        - R -e 'options(error=recover); system("clear"); doRedis::redisWorker("Rjobs")'
+        - R -e 'options(error=recover); system("clear"); doRedis::redisWorker("Rjobs")'
+        - R -e 'options(error=recover); system("clear"); doRedis::redisWorker("Rjobs")'
+        - R -e 'options(error=recover); system("clear"); doRedis::redisWorker("Rjobs")'
+        - R -e 'options(error=recover); system("clear"); doRedis::redisWorker("Rjobs")'
+        - R -e 'options(error=recover); system("clear"); doRedis::redisWorker("Rjobs")'
+
