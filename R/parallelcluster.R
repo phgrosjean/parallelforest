@@ -146,8 +146,15 @@ library(doRedis)
 
 # Create 8 workers in the 'Rjobs' queue using tmux
 system("tmuxinator start -n Rjobs")
+# or
+#system("tmuxinator start --no-attach -n RRedis -p /home/phgrosjean/Documents/GitHub/parallelforest/.tmuxinator15.yml")
+# To see the XFCE terminals:
+#system("xfce4-terminal --geometry=120x40 --hide-menubar --hide-scrollbar --drop-down --title=RRedis --icon=R -e '/usr/bin/tmux a -t RRedis'")
+#system("xfce4-terminal --hide-menubar --hide-scrollbar --drop-down --title=RRedis --icon=R -e '/usr/bin/tmux a -t RRedis'")
 
 registerDoRedis('Rjobs')
+# or
+#registerDoRedis('RRedis')
 # Determine how many workers we have
 getDoParWorkers()
 
@@ -158,6 +165,17 @@ foreach(j = 1:100, .combine = sum, .multicombine = TRUE) %dopar% {
   Sys.sleep(0.1) # Artificially increase the calculation time
   4 * sum((runif(1000000) ^ 2 + runif(1000000) ^ 2) < 1) / 10000000
 }
+
+# Just clear the workers terminals
+clearClusterTerminals <- function() {
+  oldprog <- doRedis:::.doRedisGlobals$progress
+  if (is.null(oldprog)) oldprog <- FALSE
+  setProgress(FALSE)
+  foreach(j = 1:getDoParWorkers()) %dopar% system("clear")
+  setProgress(oldprog)
+  invisible(NULL)
+}
+clearClusterTerminals()
 
 # Parallel version of the boot() function, from the vignette of {doRedis}
 
@@ -226,13 +244,15 @@ plot(results)
 boot::boot.ci(results, type = "bca")
 
 # Comparison between boot and bootForEach
+clearClusterTerminals()
 set.seed(584)
 res <- bench::mark(
   boot = boot::boot(data = mtcars, statistic = rsq,  R = 1000,
     formula = mpg~wt+disp),
   redis = bootForEach(data = mtcars, statistic = rsq,  R = 1000,
-    formula = mpg~wt+disp, chunks = 8L),
-  check = FALSE # Obviously, we always got different results!
+    formula = mpg~wt+disp, chunks = 15L),
+  check = FALSE, # Obviously, we always got different results!
+  min_iterations = 5
 )
 res
 # The redis version is 3.2x faster with 4 workers and 4x faster with 8 workers
@@ -248,6 +268,8 @@ res
 
 # This is the equivalent to closeCluster(cl)
 removeQueue('Rjobs'); system("tmux kill-session -t Rjobs")
+# or
+#removeQueue('Rjobs'); system("tmux kill-session -t RRedis")
 
 # Advantages of doRedis are elasticity, fault-tolerance and portability to different OSes. One can add more workers in the middle of a calculation!
 # It is also possible to define batch processing of several iterations in
