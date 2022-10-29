@@ -299,3 +299,7 @@ removeQueue('Rjobs'); system("tmux kill-session -t Rjobs")
 #tmuxinator start -n Rjobs
 # Or from any folder:
 #tmuxinator start -n Rjobs -p /home/phgrosjean/Documents/GitHub/parallelforest/.tmuxinator.yml
+
+# Note: on GitHub, there is HenrikBengtsson/future.redis that uses redux. Not on CRAN yet, but may be soon.
+# The future package returns everything (stdout, messages, warnings, errors), but not stderr. Less need for a tmux implementation then? There is also a UseR 2022 presentation with trace collection and graph showing what happend, but I see no available implementation yet?
+
