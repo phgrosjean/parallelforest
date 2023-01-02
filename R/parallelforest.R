@@ -2,6 +2,8 @@
 # We use STDCE classif5 with 11286 items and 40 variables
 pcloud <- svMisc::pcloud
 train <- readRDS(pcloud("plankton", "stdce", "trainingsets", "stdcetrain3.rda"))
+# Also save a .csv version for Python
+readr::write_csv(train, pcloud("plankton", "stdce", "trainingsets", "stdcetrain3.csv"))
 
 # Eliminate unwanted variables
 train$Id <- NULL
@@ -132,3 +134,37 @@ system.time(class3 <- ranger(data = train100, Class ~ .,
 # 175sec on EN-Hammerhead
 
 # With > 1,000,000 items, cuda.ml is almost 20x faster than ranger
+
+# What about Python version in scikit learn?
+reticulate::repl_python()
+# Copy-paste this to the console
+import pandas as pd
+df = pd.read_csv("~/pCloudDrive/plankton/stdce/trainingsets/stdcetrain3.csv")
+df.sample(5, random_state = 44)
+df.info()
+#df = df.dropna()
+X = df.drop(["Id", "Label", "Item", "XStart", "YStart", "Dil", "Class"], axis = 1)
+y = df["Class"]
+#from sklearn.model_selection import train_test_split
+#X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.3, random_state = 44)
+X_train = X
+y_train = y
+from sklearn.ensemble import RandomForestClassifier
+rf_model = RandomForestClassifier(n_estimators = 500, max_features = "sqrt", random_state = 0)
+import time
+start_time = time.time()
+rf_model.fit(X_train, y_train)
+elapsed_time = time.time() - start_time
+print(f"Elapsed time to compute random forest with scikit-learn: {elapsed_time:.3f} seconds")
+# This makes 17.91sec on En-Hammerhead (xas 11 sec for R's randomForest())
+# So, the Python version is much slower
+
+# Using cuML
+from cuml.ensemble import RandomForestClassifier as cuRF
+curf_model = cuRF(n_estimators = 500, random_state  = 0)
+import time
+start_time = time.time()
+curf_model.fit(X_train, y_train)
+elapsed_time = time.time() - start_time
+print(f"Elapsed time to compute random forest with cuML: {elapsed_time:.3f} seconds")
+# Cannot run this because I cannot install cuML
