@@ -5,7 +5,7 @@ data(meuse, package = "sp")
 meuse$logZn <- log10(meuse$zinc)
 
 n <- 1000
-rf.stats <- data.frame(rep = 1:10, rsq = as.numeric(NA), mse = as.numeric(NA))
+rf.stats <- data.frame(rep = 1:n, rsq = as.numeric(NA), mse = as.numeric(NA))
 system.time(
   for (i in 1:n) {
     model.rf <- randomForest(data = meuse,
@@ -22,9 +22,9 @@ library(foreach)
 cl <- parallel::makePSOCKcluster(15L)
 doParallel::registerDoParallel(cl, cores = 2L)
 
-rf.stats <- data.frame(rep = 1:1000, rsq = as.numeric(NA), mse = as.numeric(NA))
-ra.stats <- data.frame(rep = 1:1000, rsq = as.numeric(NA), mse = as.numeric(NA))
-ra.stats2 <- data.frame(rep = 1:1000, rsq = as.numeric(NA), mse = as.numeric(NA))
+rf.stats <- data.frame(rep = 1:n, rsq = as.numeric(NA), mse = as.numeric(NA))
+ra.stats <- data.frame(rep = 1:n, rsq = as.numeric(NA), mse = as.numeric(NA))
+ra.stats2 <- data.frame(rep = 1:n, rsq = as.numeric(NA), mse = as.numeric(NA))
 microbenchmark::microbenchmark(times = 10L,
   rf = for (i in 1:n) {
     model.rf <- randomForest(data = meuse,
